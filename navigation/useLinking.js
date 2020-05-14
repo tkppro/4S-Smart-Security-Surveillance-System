@@ -11,6 +11,10 @@ export default function(containerRef) {
           Home: 'home',
           Links: 'links',
           Settings: 'settings',
+          Notifications: 'notifications',
+          Login: 'login',
+          Register: 'register',
+          DetailNotification: 'detailNotification'
         },
       },
     },
