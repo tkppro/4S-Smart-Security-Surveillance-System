@@ -12,3 +12,6 @@ web-report/
 
 # macOS
 .DS_Store
+/backend/auth.ini
+/backend/sproject-3697d-firebase-adminsdk-smiiq-ea6aea6b5c.json
+/backend/dataset

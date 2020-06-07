@@ -1,3 +1,5 @@
 {
-    "python.pythonPath": "venv\\Scripts\\python.exe"
+    "python.pythonPath": "/home/thang/anaconda3/envs/tracker-cpu/bin/python",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true
 }

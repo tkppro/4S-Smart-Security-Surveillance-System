@@ -1,3 +1,6 @@
+auth.ini
+sproject-3697d-firebase-adminsdk-smiiq-ea6aea6b5c.json
+encodings.pickle
 *.h5
 *.weights
 weights/yolov3.tf.*
