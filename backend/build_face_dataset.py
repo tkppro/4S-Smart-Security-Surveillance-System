@@ -1,5 +1,5 @@
 # USAGE
-# python build_face_dataset.py --cascade haarcascade_frontalface_default.xml --output dataset/adrian
+# python build_face_dataset.py --cascade models/haarcascade_frontalface_default.xml --output dataset/adrian
 
 # import the necessary packages
 from imutils.video import VideoStream
@@ -24,8 +24,8 @@ detector = cv2.CascadeClassifier(args["cascade"])
 # and initialize the total number of example faces written to disk
 # thus far
 print("[INFO] starting video stream...")
-vs = VideoStream(src='http://admin:admin@192.168.0.101/videostream.cgi?user=admin&pwd=admin&resolution=32&rate=0').start()
-# vs = VideoStream(usePiCamera=True).start()
+# vs = VideoStream(src='http://admin:admin@192.168.0.105/videostream.cgi?user=admin&pwd=admin&resolution=32&rate=0').start()
+vs = VideoStream(0).start()
 time.sleep(2.0)
 total = 0
 

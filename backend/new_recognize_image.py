@@ -14,11 +14,15 @@ from imutils import face_utils
 import datetime
 import os
 import base64
-
+import json
 from glob import glob
 
 FOLDER_RAW = './pictures/raw'
 FOLDER_DONE = './pictures/done'
+
+FOLDER_JSON_RAW = './data_json/raw/'
+FOLDER_JSON_DONE = './data_json/done/'
+
 
 EYE_AR_THRESH = 0.3
 EYE_AR_CONSEC_FRAMES = 3
@@ -31,7 +35,7 @@ data = pickle.loads(open("./encodings.pickle", "rb").read())
 detector = cv2.CascadeClassifier('./models/haarcascade_frontalface_default.xml')
 
 # face_detector = dlib.get_frontal_face_detector()
-face_predictor = dlib.shape_predictor('./models/shape_predictor_68_face_landmarks.dat')
+# face_predictor = dlib.shape_predictor('./models/shape_predictor_68_face_landmarks.dat')
 
 # grab the indexes of the facial landmarks for the left and
 # right eye, respectively
@@ -127,15 +131,41 @@ def recognize_face(fn):
 
     # move file that done from raw to done
     cv2.imwrite(FOLDER_DONE + '/'+ image_name + '' + str(names) + '.jpg',frame)
+    raw_json_location = FOLDER_JSON_RAW + image_name + '.json'
+    
+    dataJSON = {}
+    savedName = " "
+    if os.path.exists(raw_json_location):
+        with open(raw_json_location, 
+            encoding='utf-8', 
+            errors='ignore') as json_data:
+            dataJSON = json.load(json_data, strict=False)
+            if len(names) != 0:
+                savedName = savedName.join(names)
+                dataJSON['name'] = savedName
+
+        with open(FOLDER_JSON_DONE + image_name + '.json', 'w') as outfile:
+            json.dump(dataJSON, outfile)
+
+
+
 
     if os.path.exists(fn):
         print ('removed ' + fn)
         os.remove(fn)
+
+    if os.path.exists(raw_json_location):
+        print('removed ' + raw_json_location)
+        os.remove(raw_json_location)
 
 
 def handle():
     for fn in glob(FOLDER_RAW + '/*.*'):
         recognize_face (fn)
 
+# handle()
 
-handle()
+def handle_single_image(image):
+    recognize_face(image)
+
+# handle_single_image(image)

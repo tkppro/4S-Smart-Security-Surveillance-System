@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # import the necessary packages
 from scipy.spatial import distance as dist
 from imutils.video import VideoStream
@@ -55,9 +56,50 @@ args = vars(ap.parse_args())
 #     # return the eye aspect ratio
 #     return ear
 
+known_face_encodings = []
+known_face_metadata = []
 
-vs = VideoStream(src='http://admin:admin@192.168.0.100/videostream.cgi?user=admin&pwd=admin&resolution=32&rate=0').start()
+def save_known_faces():
+    with open("encodings.pickle", "wb") as face_data_file:
+        face_data = [known_face_encodings, known_face_metadata]
+        pickle.dump(face_data, face_data_file)
+        print("Known faces backed up to disk.")
 
+
+def load_known_faces():
+    global known_face_encodings, known_face_metadata
+
+    try:
+        with open("encodings.pickle", "rb") as face_data_file:
+            known_face_encodings, known_face_metadata = pickle.load(face_data_file)
+            print("Known faces loaded from disk.")
+    except FileNotFoundError as e:
+        print("No previous face data found - starting with a blank known face list.")
+        pass
+
+def register_new_face(face_encoding, face_image):
+    """
+    Add a new person to our list of known faces
+    """
+    # Add the face encoding to the list of known faces
+    known_face_encodings.append(face_encoding)
+    # Add a matching dictionary entry to our metadata list.
+    # We can use this to keep track of how many times a person has visited, when we last saw them, etc.
+    known_face_metadata.append({
+        "first_seen": datetime.now(),
+        "first_seen_this_interaction": datetime.now(),
+        "last_seen": datetime.now(),
+        "seen_count": 1,
+        "seen_frames": 1,
+        "face_image": face_image,
+        "send_data": False,
+        "name": "Unknown"
+    })
+
+
+
+# vs = VideoStream(src='http://admin:admin@192.168.0.105/videostream.cgi?user=admin&pwd=admin&resolution=32&rate=0').start()
+vs = VideoStream(0).start()
 
 def recognize_face():
     writer = None
@@ -77,10 +119,10 @@ def recognize_face():
         # OpenCV returns bounding box coordinates in (x, y, w, h) order
         # but we need them in (top, right, bottom, left) order, so we
         # need to do a bit of reordering
-        boxes = [(y, x + w, y + h, x) for (x, y, w, h) in rects]
+        boxesFace = [(y, x + w, y + h, x) for (x, y, w, h) in rects]
 
         # compute the facial embeddings for each face bounding box
-        encodings = face_recognition.face_encodings(rgb, boxes)
+        encodings = face_recognition.face_encodings(rgb, boxesFace)
         names = []
 
         # loop over the facial embeddings
@@ -88,8 +130,7 @@ def recognize_face():
             # attempt to match each face in the input image to our known
             # encodings
             matches = face_recognition.compare_faces(data["encodings"],
-                encoding, 0.35)
-            # start_time = time.time()
+                encoding, 0.6)
             name = "Unknown"
             
             # check to see if we have found a match
@@ -105,22 +146,18 @@ def recognize_face():
                 for i in matchedIdxs:
                     name = data["names"][i]
                     counts[name] = counts.get(name, 0) + 1
+                    # print(name + " has been here!")
                 # determine the recognized face with the largest number
                 # of votes (note: in the event of an unlikely tie Python
                 # will select first entry in the dictionary)
                 name = max(counts, key=counts.get)
-            # save image if name is unknown
-            # end_time = time.time()
-            # if name is "Unknown":
-                # id = uuid.uuid1() 
-                # cv2.imwrite(FOLDER_OUTPUT + '/' + id.hex + '.jpg',frame)
-                # print('Unknown has been here: ', int(end_time - start_time))
-
+            else: 
+                print("Unknown has been here!")
             # update the list of names
             names.append(name)
 
         # loop over the recognized faces
-        for ((top, right, bottom, left), name) in zip(boxes, names):
+        for ((top, right, bottom, left), name) in zip(boxesFace, names):
 
             top = int(top * r)
             right = int(right * r)
@@ -133,16 +170,6 @@ def recognize_face():
             y = top - 15 if top - 15 > 15 else top + 15
             cv2.putText(frame, name, (left, y), cv2.FONT_HERSHEY_SIMPLEX,
                 0.75, (0, 255, 0), 2)
-
-        if writer is None and args["output"] is not None:
-            fourcc = cv2.VideoWriter_fourcc(*"MJPG")
-            writer = cv2.VideoWriter(args["output"], fourcc, 20,
-                (frame.shape[1], frame.shape[0]), True)
-
-        # if the writer is not None, write the frame with recognized
-        # faces t odisk
-        if writer is not None:
-            writer.write(frame)
             
         cv2.imshow("Frame", frame)
 
@@ -153,13 +180,6 @@ def recognize_face():
 
     cv2.destroyAllWindows()
     vs.stop()    
-
-    if writer is not None:
-	    writer.release()
-    # move file that done from raw to done
-    # cv2.imwrite(FOLDER_DONE + '/'+ image_name + '' + str(names) + '.jpg',frame)
-
-
 
 def handle():
     recognize_face()
