@@ -46,7 +46,9 @@ export default function Login({ navigation }) {
 
     return (
         <Container style={styles.container}>
-            <Image style={styles.logoStyle} source={require(logoURI)}/>
+            <View style={styles.viewImg}>
+                <Image style={styles.logoStyle} source={require(logoURI)}/>
+            </View>
             <Form>
                     <Item floatingLabel>
                         <Label>Email</Label>
@@ -79,13 +81,16 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
-        // alignItems: 'stretch',
         margin: 10
     },
     logoStyle: {
         width: 150,
         height: 150
     },
+    viewImg: {
+        justifyContent: 'center',
+        alignItems: 'center'
+    }
     
 });
 

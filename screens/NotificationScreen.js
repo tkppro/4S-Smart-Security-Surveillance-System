@@ -4,7 +4,7 @@ import { RectButton, ScrollView, TouchableOpacity } from 'react-native-gesture-h
 import Mock from '../components/Mock';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-
+import firebase from '../src/firebase';
 
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
@@ -19,15 +19,36 @@ export default function NotificationScreen({ navigation }) {
 
     const [mockData, setMockData] = useState(Mock);
     
+    const [resNotifications, setResNotifications] = useState();
+    
+
+    React.useEffect(() => {
+        
+        firebase.database().ref('/actions').on('value', data => {
+            var newData = data.val()
+            var arr = Object.entries(newData)
+            setResNotifications(arr);
+        })
+        
+        // const retrieveData = async () => {
+        //     let ary = {};
+        //     const eventref = firebase.database().ref("/actions").orderByKey();
+        //     const snapshot = await eventref.on('value');
+        //     const value = snapshot.val();
+        //     ary = Object.entries(value);
+        //     return ary;
+        // }
+
+    }, []);
 
     const filterToday = () => {
         // mockData.forEach((item) => moment(item.detectedAt).format('MMMM Do YYYY  h:mm:ss'));
         // var array = mockData.filter(item => isToday(new Date(item.detectedAt)));
-        var arr = mockData.map((item) => {
-            return new Date(item.detectedAt)
-        })
+        return resNotifications.filter(item => isToday(new Date(item.detectedAt))).length()
+    };
+
+    const sortNotifications = () => {
         
-        console.log(arr);
     };
 
     const generateRandomColor = () => {
@@ -35,30 +56,24 @@ export default function NotificationScreen({ navigation }) {
         var num = Math.round(Math.random() *3);
         // converting number to hex string to be read as RGB
         var hexString = arr[num];
-        // return {
-        //     borderLeftColor: hexString
-        // };
         return hexString;
     };
 
     const NotificationTemplate = ({ item, style }) => {
         return (
             <View style={{ ...styles.singleNotification, borderLeftColor: style }}>
-                <CheckBox style={{ marginRight: 50 }}
-                    checked={item.markAsSeen}
-                ></CheckBox>
-                <TouchableOpacity onPress={() => navigation.push('Notification',
+                <TouchableOpacity style={styles.touchableStyle} onPress={() => navigation.push('Notification',
                         {
                             screen: 'DetailNotification',
                             params: { item }
                         })}>
-                    <Text style={styles.notiTime}>{item.detectedAt} {item.personName} - standing</Text>
+                    <Text style={styles.notiTime}>{item.detectedAt} {item.name} - standing</Text>
                     <Text></Text>
                 </TouchableOpacity>
             </View>
         )
     };
-
+    
     return (
         <ScrollView
             style={styles.container}
@@ -87,15 +102,16 @@ export default function NotificationScreen({ navigation }) {
                 <Text style={styles.smallTitle}>Today</Text>
                 <View>
                     <FlatList
-                        data={mockData}
-                        renderItem={({ item }) => <NotificationTemplate style={generateRandomColor()} item={item} />}
-                        keyExtractor={item => item.id.toString()}
+                        inverted
+                        data={resNotifications}
+                        renderItem={({ item }) => <NotificationTemplate style={generateRandomColor()} item={item[1]} />}
+                        keyExtractor={item => item[0]}
                     >
 
                     </FlatList>
                 </View>
             </View>
-            <View style={styles.notifications}>
+            {/* <View style={styles.notifications}>
                 <Text style={styles.smallTitle}>Yesterday</Text>
                 <View>
                     <FlatList
@@ -106,7 +122,7 @@ export default function NotificationScreen({ navigation }) {
 
                     </FlatList>
                 </View>
-            </View>
+            </View> */}
         </ScrollView>
     );
 }
@@ -157,7 +173,7 @@ const styles = StyleSheet.create({
     singleNotification: {
         flex: 1,
         flexDirection: 'row',
-        justifyContent: 'flex-start',
+        justifyContent: 'center',
         marginBottom: 10,
         marginTop: 10,
         height: 50,
@@ -186,5 +202,8 @@ const styles = StyleSheet.create({
         fontFamily:'rubik-medium', 
         fontSize: 13, 
         color: '#8B87B3'
+    },
+    touchableStyle: {
+        marginTop: 20,
     }
 });

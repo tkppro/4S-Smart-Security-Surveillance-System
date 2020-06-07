@@ -53,8 +53,7 @@ export default function App(props) {
                 return;
             }
             token = await Notifications.getExpoPushTokenAsync();
-            console.log(token);
-            // this.setState({ expoPushToken: token });
+           
             setData({
                 ...data,
                 expoPushToken: token,
