@@ -71,7 +71,7 @@ termcolor==1.1.0
 threadpoolctl==2.0.0
 tifffile==2020.5.25
 uritemplate==3.0.1
-urllib3==1.25.9
+urllib3==1.26.5
 watchdog==0.10.2
 webencodings==0.5.1
 Werkzeug==0.16.1
