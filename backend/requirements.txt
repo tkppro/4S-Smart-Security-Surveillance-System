@@ -33,7 +33,7 @@ idna==2.9
 imageio==2.8.0
 imgurpython==1.1.7
 imutils==0.5.3
-joblib==0.15.1
+joblib==1.2.0
 Keras-Applications==1.0.8
 Keras-Preprocessing==1.1.0
 kiwisolver==1.2.0
